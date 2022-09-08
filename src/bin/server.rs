@@ -3,13 +3,13 @@ use http_snake::game::direction::Direction;
 use parking_lot::{Mutex, RwLock};
 
 #[tokio::main]
-async fn main() {
+async fn main() -> std::io::Result<()> {
     // start server with some web framework
     // crate two threads, one with interval ticker sender
     // and the second one with reciver waiting to update game state
     // or maybe third one to print the board in console
     let bs = web::Data::new(BoardState {
-        board: RwLock::new("".to_owned()),
+        board: RwLock::new("SHNAKE".to_owned()),
     });
 
     let dir_buf = web::Data::new(DirBuffer {
@@ -22,7 +22,10 @@ async fn main() {
             .app_data(dir_buf.clone())
             .service(get_board)
             .service(post_up)
-    });
+    })
+    .bind(("127.0.0.1", 3721))?
+    .run()
+    .await
 }
 
 struct BoardState {

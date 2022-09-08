@@ -1,112 +1,59 @@
 use std::collections::{HashSet, VecDeque};
 
-use rand::Rng;
+use rand::thread_rng;
 
-use super::{direction::Direction, COLS, POSSIBLE_SNAKE_STARTING_RANGE, ROWS};
-
-type Board = [[Tile; ROWS]; COLS];
-type Position = (usize, usize);
-
-#[derive(Clone, Copy, PartialEq)]
-enum Tile {
-    Snake,
-    Empty,
-    Fruit,
-}
-
-impl Default for Tile {
-    fn default() -> Self {
-        Tile::Empty
-    }
-}
-
-struct Snake {
-    dir: Direction,
-    occupied: VecDeque<Position>,
-    max_idx: usize,
-}
-
-impl Snake {
-    fn new() -> Self {
-        Default::default()
-    }
-
-    fn head(&self) -> &Position {
-        // cannot be empty so its safe to unwrap
-        self.occupied.front().unwrap()
-    }
-
-    fn tail(&self) -> &Position {
-        self.occupied.back().unwrap()
-    }
-
-    // returns new head position
-    fn move_(&mut self, dir: Direction) -> Position {
-        let head = self.head();
-
-        (0, 0)
-    }
-}
-
-impl Default for Snake {
-    fn default() -> Self {
-        let mut rng = rand::thread_rng();
-        let x = rng.gen_range(POSSIBLE_SNAKE_STARTING_RANGE);
-        let y = rng.gen_range(POSSIBLE_SNAKE_STARTING_RANGE);
-        let mut deq = VecDeque::with_capacity(COLS * ROWS);
-
-        for i in x..x + 4 {
-            deq.push_back((i, y));
-        }
-
-        let max_idx = ROWS - 1;
-
-        Self {
-            dir: Direction::Left,
-            occupied: deq,
-            max_idx,
-        }
-    }
-}
+use super::{
+    direction::Direction, snake::Snake, Board, Position, Tile, COLS, POSSIBLE_SNAKE_STARTING_RANGE,
+    ROWS,
+};
 
 pub struct Game {
-    world: Board,
+    world: Board<Tile>,
     snake: Snake,
-    vacant: HashSet<Position>,
+    vacant: Board<bool>,
     fruit: Position,
 }
 
 impl Game {
     pub fn new_random() -> Self {
-        let mut board: Board = [[Tile::Empty; ROWS]; COLS];
+        let mut board: Board<Tile> = [[Tile::Empty; ROWS]; COLS];
+
+        let mut vacant: Board<bool> = [[true; ROWS]; COLS];
 
         let snake = Snake::new();
 
         for pos in &snake.occupied {
             board[pos.0][pos.1] = Tile::Snake;
+            vacant[pos.0][pos.1] = false;
         }
 
-        let vacant = board
-            .iter()
-            .enumerate()
-            .flat_map(move |(idx, row)| {
-                row.iter()
-                    .enumerate()
-                    .filter(|(_, tile)| *tile != &Tile::Snake)
-                    .map(|(idy, _)| (idx, idy))
-                    .collect::<Vec<Position>>()
-            })
-            .collect::<HashSet<Position>>();
 
         Game {
             world: board,
             snake,
             vacant,
-            fruit: (0, 0),
+            fruit: (19, 19),
         }
     }
 
-    fn progress(&mut self, dir: Direction) {}
+    fn progress(&mut self, dir: Direction) {
+        let snake_head = self.snake.move_(dir);
 
-    fn spawn_fruit(&mut self) {}
+        if snake_head == self.fruit {
+            self.spawn_fruit();
+        } else {
+            let tail= self.snake.occupied.pop_back().unwrap();
+            self.vacant[tail.0][tail.1] = true;
+        }
+
+        self.vacant[snake_head.0][snake_head.1] = false;
+    }
+
+    fn spawn_fruit(&mut self) {
+        let vacant_positions = 
+
+        let mut rng = thread_rng();
+        
+        let fruit = rng.
+    }
 }
