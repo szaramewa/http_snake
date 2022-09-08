@@ -23,6 +23,7 @@ impl Default for Tile {
 struct Snake {
     dir: Direction,
     occupied: VecDeque<Position>,
+    max_idx: usize,
 }
 
 impl Snake {
@@ -38,6 +39,13 @@ impl Snake {
     fn tail(&self) -> &Position {
         self.occupied.back().unwrap()
     }
+
+    // returns new head position
+    fn move_(&mut self, dir: Direction) -> Position {
+        let head = self.head();
+
+        (0, 0)
+    }
 }
 
 impl Default for Snake {
@@ -51,9 +59,12 @@ impl Default for Snake {
             deq.push_back((i, y));
         }
 
+        let max_idx = ROWS - 1;
+
         Self {
             dir: Direction::Left,
             occupied: deq,
+            max_idx,
         }
     }
 }
@@ -66,7 +77,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new() -> Self {
+    pub fn new_random() -> Self {
         let mut board: Board = [[Tile::Empty; ROWS]; COLS];
 
         let snake = Snake::new();
@@ -86,20 +97,16 @@ impl Game {
                     .collect::<Vec<Position>>()
             })
             .collect::<HashSet<Position>>();
-        // let vacant: HashSet<Position> = board.iter()
-        //      .enumerate().flat_map(move |(idx, row)| row.iter().enumerate().filter(|(idy, tile)| tile != Tile::Snake).map(|idy, _) (idx, idy)).collect();
+
         Game {
             world: board,
             snake,
             vacant,
-            fruit: (0, 0)
+            fruit: (0, 0),
         }
     }
 
-    fn progress(&mut self, dir: Direction) {
-    }
+    fn progress(&mut self, dir: Direction) {}
 
-    fn spawn_fruit(&mut self) {
-
-    }
+    fn spawn_fruit(&mut self) {}
 }

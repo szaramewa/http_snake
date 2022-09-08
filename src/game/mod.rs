@@ -1,7 +1,7 @@
 use std::ops::Range;
 
-mod direction;
-mod game;
+pub mod direction;
+pub mod game;
 
 // world size
 const ROWS: usize = 40;
