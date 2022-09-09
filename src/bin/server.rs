@@ -1,6 +1,4 @@
 use std::{
-    fmt::Write,
-    sync::mpsc::{self, Receiver, Sender},
     thread,
     time::Duration,
 };
@@ -9,14 +7,17 @@ use actix_web::{get, http::header::ContentType, post, web, App, HttpResponse, Ht
 use http_snake::game::{direction::Direction, game::Game};
 use parking_lot::{Mutex, RwLock};
 use rand::random;
-use tokio::time;
+use tokio::{
+    runtime::Handle,
+    sync::mpsc::{self, Receiver, Sender},
+    time,
+};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // start server with some web framework
-    // crate two threads, one with interval ticker sender
-    // and the second one with reciver waiting to update game state
-    // or maybe third one to print the board in console
+    // handle to async runtime for use in another thread
+    // maybe change it to local thread so it doesnt span on other threads
+    let handle = Handle::current();
     let mut game = Game::new_random();
     let bs = web::Data::new(BoardString {
         board: RwLock::new(game.to_string()),
@@ -28,35 +29,39 @@ async fn main() -> std::io::Result<()> {
 
     let board_writer = bs.clone();
     let dir_buf_reader = dir_buf.clone();
+
+    let (tx, mut rx): (Sender<String>, Receiver<String>) = mpsc::channel(100);
+
     // spawn thread to manage game state
-    let handle = thread::spawn(move || {
-        // let mut interval = time::interval(Duration::from_millis(100));
-        loop {
-            thread::sleep(Duration::from_secs(1));
-            // interval.tick().await;
-            // new scope to drop locks
-            {
-                println!("tick");
-                let mut game_str = board_writer.board.write();
-                let dir = {
-                    dir_buf_reader
-                        .buffer
-                        .lock()
-                        .get(0)
-                        .unwrap_or(&random())
-                        .clone()
-                };
+    thread::spawn(move || {
+        handle.spawn(async move {
+            let mut interval = time::interval(Duration::from_secs(1));
 
-                game.progress(dir);
-                *game_str = game.to_string();
+            loop {
+                interval.tick().await;
+                {
+                    let mut game_str = board_writer.board.write();
+                    let dir = {
+                        dir_buf_reader
+                            .buffer
+                            .lock()
+                            .get(0)
+                            .unwrap_or(&random())
+                            .clone()
+                    };
 
-
-                // tx.send(game.to_string()).unwrap();
+                    game.progress(dir);
+                    *game_str = game.to_string();
+                }
+                let _ = tx.send(game.to_string()).await;
             }
-        }
+        });
     });
 
-    // let (tx, mut rx): (Sender<String>, Receiver<String>) = mpsc::channel();
+    while let Some(board) = rx.recv().await {
+        println!("{board}");
+    }
+
     HttpServer::new(move || {
         App::new()
             .app_data(bs.clone())
@@ -66,16 +71,7 @@ async fn main() -> std::io::Result<()> {
     })
     .bind(("127.0.0.1", 3721))?
     .run()
-    .await;
-    handle.join().unwrap();
-
-    // thread::spawn(move || {
-    //     while let Ok(board) = rx.recv() {
-    //         println!("{board}");
-    //     }
-    // });
-
-    Ok(())
+    .await
 }
 
 struct BoardString {
@@ -111,11 +107,3 @@ async fn post_dir(path: web::Path<(String,)>, buf: web::Data<DirBuffer>) -> Http
             .body(err_msg.to_string()),
     }
 }
-
-// #[post("/snake/up")]
-// async fn post_up(buf: web::Data<DirBuffer>) -> HttpResponse {
-//     let dir = Direction::Up;
-//
-//     buf.buffer.lock().push(dir);
-//     HttpResponse::Ok().finish()
-// }
