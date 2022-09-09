@@ -1,5 +1,5 @@
 use actix_web::{get, post, web, App, HttpRequest, HttpResponse, HttpServer, Result};
-use http_snake::game::direction::Direction;
+use http_snake::game::{direction::Direction, game::Game};
 use parking_lot::{Mutex, RwLock};
 
 #[tokio::main]
@@ -8,7 +8,8 @@ async fn main() -> std::io::Result<()> {
     // crate two threads, one with interval ticker sender
     // and the second one with reciver waiting to update game state
     // or maybe third one to print the board in console
-    let bs = web::Data::new(BoardState {
+    let game = Game::new_random();
+    let bs = web::Data::new(BoardString {
         board: RwLock::new("SHNAKE".to_owned()),
     });
 
@@ -28,7 +29,7 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-struct BoardState {
+struct BoardString {
     board: RwLock<String>,
 }
 
@@ -37,7 +38,7 @@ struct DirBuffer {
 }
 
 #[get("/snake")]
-async fn get_board(board: web::Data<BoardState>) -> String {
+async fn get_board(board: web::Data<BoardString>) -> String {
     board.board.read().to_owned()
 }
 

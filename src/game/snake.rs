@@ -1,8 +1,6 @@
 use std::collections::VecDeque;
 
-use rand::Rng;
-
-use super::{direction::Direction, Position, COLS, POSSIBLE_SNAKE_STARTING_RANGE, ROWS};
+use super::{direction::Direction, gen_random_idx_in_range, Position, COLS, ROWS};
 
 pub struct Snake {
     pub dir: Direction,
@@ -67,10 +65,8 @@ impl Snake {
 
 impl Default for Snake {
     fn default() -> Self {
-        // extract it to separate function
-        let mut rng = rand::thread_rng();
-        let x = rng.gen_range(POSSIBLE_SNAKE_STARTING_RANGE);
-        let y = rng.gen_range(POSSIBLE_SNAKE_STARTING_RANGE);
+        let x = gen_random_idx_in_range();
+        let y = gen_random_idx_in_range();
         let mut deq = VecDeque::with_capacity(COLS * ROWS);
 
         for i in x..x + 4 {
