@@ -26,7 +26,7 @@ impl Distribution<Direction> for Standard {
             1 => Direction::Down,
             2 => Direction::Left,
             3 => Direction::Right,
-            _ => panic!("SHoudl not panic")
+            _ => panic!("SHoudl not panic"),
         }
     }
 }

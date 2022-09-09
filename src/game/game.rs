@@ -35,20 +35,21 @@ impl Game {
     }
 
     pub fn progress(&mut self, dir: Direction) {
-        let snake_head = self.snake.move_(dir);
+        let new_head = self.snake.move_(dir);
 
-        if self.world[snake_head.0][snake_head.1] == Tile::Snake {
-            panic!("GAME OVER")
-        }
+        // inspect this condition, might be wrong
+        // if self.world[new_head.0][new_head.1] == tile::snake {
+        //     panic!("GAME OVER")
+        // }
 
-        if snake_head == self.fruit {
+        if new_head == self.fruit {
             self.spawn_fruit();
         } else {
             let tail = self.snake.occupied.pop_back().unwrap();
             self.world[tail.0][tail.1] = Tile::Empty;
         }
 
-        self.world[snake_head.0][snake_head.1] = Tile::Snake;
+        self.world[new_head.0][new_head.1] = Tile::Snake;
     }
 
     fn spawn_fruit(&mut self) {

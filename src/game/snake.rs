@@ -27,7 +27,6 @@ impl Snake {
         if dir == self.dir.opposite() {
             return self.move_(self.dir);
         }
-
         let mut head = self.head();
 
         match dir {

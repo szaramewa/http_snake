@@ -7,8 +7,8 @@ pub mod game;
 pub mod snake;
 
 // world size
-const ROWS: usize =15;
-const COLS: usize =15;
+const ROWS: usize = 15;
+const COLS: usize = 15;
 
 const POSSIBLE_SNAKE_STARTING_RANGE: Range<usize> = 3..5;
 
