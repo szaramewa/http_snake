@@ -24,28 +24,25 @@ impl Snake {
 
     // returns new head position
     pub fn move_(&mut self, dir: Direction) -> Position {
+        if dir == self.dir.opposite() {
+            return self.move_(self.dir);
+        }
+
         let mut head = self.head();
 
         match dir {
-            Direction::Up => {
-                if head.0 == 0 {
-                    head.0 = self.max_idx
-                } else {
-                    head.0 += 1
-                }
-            }
             Direction::Down => {
                 if head.0 == self.max_idx {
                     head.0 = 0
                 } else {
-                    head.0 -= 1
+                    head.0 += 1
                 }
             }
-            Direction::Left => {
-                if head.1 == 0 {
-                    head.1 = self.max_idx
+            Direction::Up => {
+                if head.0 == 0 {
+                    head.0 = 0
                 } else {
-                    head.1 -= 1
+                    head.0 -= 1
                 }
             }
             Direction::Right => {
@@ -53,6 +50,13 @@ impl Snake {
                     head.1 = 0
                 } else {
                     head.1 += 1
+                }
+            }
+            Direction::Left => {
+                if head.1 == 0 {
+                    head.1 = self.max_idx
+                } else {
+                    head.1 -= 1
                 }
             }
         };
@@ -69,7 +73,7 @@ impl Default for Snake {
         let y = gen_random_idx_in_range();
         let mut deq = VecDeque::with_capacity(COLS * ROWS);
 
-        for i in x..x + 4 {
+        for i in x..x + 8 {
             deq.push_back((i, y));
         }
 

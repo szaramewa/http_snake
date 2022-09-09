@@ -7,10 +7,10 @@ pub mod game;
 pub mod snake;
 
 // world size
-const ROWS: usize = 40;
-const COLS: usize = 40;
+const ROWS: usize =15;
+const COLS: usize =15;
 
-const POSSIBLE_SNAKE_STARTING_RANGE: Range<usize> = 15..26;
+const POSSIBLE_SNAKE_STARTING_RANGE: Range<usize> = 3..5;
 
 type Board<T> = [[T; ROWS]; COLS];
 type Position = (usize, usize);

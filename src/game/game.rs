@@ -6,7 +6,7 @@ use super::{direction::Direction, snake::Snake, Board, Position, Tile, COLS, ROW
 
 pub struct Game {
     world: Board<Tile>,
-    snake: Snake,
+    pub snake: Snake,
     fruit: Position,
 }
 
@@ -37,12 +37,18 @@ impl Game {
     pub fn progress(&mut self, dir: Direction) {
         let snake_head = self.snake.move_(dir);
 
+        if self.world[snake_head.0][snake_head.1] == Tile::Snake {
+            panic!("GAME OVER")
+        }
+
         if snake_head == self.fruit {
             self.spawn_fruit();
         } else {
             let tail = self.snake.occupied.pop_back().unwrap();
-            self.world[tail.0][tail.1] = Tile::Snake;
+            self.world[tail.0][tail.1] = Tile::Empty;
         }
+
+        self.world[snake_head.0][snake_head.1] = Tile::Snake;
     }
 
     fn spawn_fruit(&mut self) {
@@ -68,16 +74,16 @@ impl Game {
 
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.world.iter().fold(String::new(), |mut acc, row| {
-                for tile in row {
-                    acc.push_str(&tile.to_string())
-                }
-                acc.push('\n');
-                acc
-            })
-        )
+        let border: String = std::iter::repeat('-').take(ROWS + 2).collect();
+        let board = self.world.iter().fold(String::new(), |mut acc, row| {
+            acc.push('|');
+            for tile in row {
+                acc.push_str(&tile.to_string())
+            }
+            acc.push_str(&"|\n");
+            acc
+        });
+
+        write!(f, "{}\n{}{}", border, board, border)
     }
 }
