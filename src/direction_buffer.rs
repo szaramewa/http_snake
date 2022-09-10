@@ -15,7 +15,7 @@ pub struct DirBuf {
 impl DirBuf {
     pub fn new() -> Self {
         Self {
-            buffer: [None; 1024],
+            buffer: [None; BUF_MAX_SIZE],
             idx: 0,
             current_dir: Default::default(),
         }
@@ -47,8 +47,6 @@ impl DirBuf {
             .filter_map(|dir| dir.take())
             .collect();
 
-        assert!(self.buffer.iter().all(|opt| opt.is_none()));
-        // println!("curr: {}", self.current_dir);
 
         let five_random: Vec<Direction> = dirs.choose_multiple(&mut rng, 5).cloned().collect();
 
@@ -71,8 +69,6 @@ impl DirBuf {
             }
             None => self.current_dir,
         };
-
-        // println!("rand: {}", random_dir);
 
         self.idx = 0;
         self.current_dir = random_dir;

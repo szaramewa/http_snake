@@ -1,16 +1,19 @@
 use std::time::Duration;
 
 use actix_web::{get, http::header::ContentType, post, web, App, HttpResponse, HttpServer};
+use futures::join;
 use http_snake::{
     direction_buffer::DirBuf,
     game::{direction::Direction, game::Game},
 };
 use parking_lot::{Mutex, RwLock};
 use tokio::{
-    join,
     runtime::Handle,
     signal,
-    sync::mpsc::{self, Receiver, Sender},
+    sync::{
+        broadcast,
+        mpsc::{self, Receiver, Sender},
+    },
     time,
 };
 
@@ -34,31 +37,61 @@ async fn main() -> Result<(), std::io::Error> {
     let board_writer = bs.clone();
     let dir_buf_reader = dir_buf.clone();
 
-    let (tx, mut rx): (Sender<String>, Receiver<String>) = mpsc::channel(10);
+    let (tx, mut rx): (Sender<String>, Receiver<String>) = mpsc::channel(1);
+    let (kill_tx, mut kill_rx) = broadcast::channel(10);
+    let mut print_kill_rx = kill_tx.subscribe();
+
+    let interrupt_task = tokio::spawn(async move {
+        match signal::ctrl_c().await {
+            Ok(()) => {
+                println!("Got ctrlc");
+                kill_tx.send(()).unwrap();
+                println!("Sended");
+            }
+            Err(err) => println!("Error handling ctrlc: {}", err),
+        }
+    });
 
     // task managing game state
     let game_state_task = tokio::task::spawn_blocking(move || {
         handle.block_on(async move {
             let mut interval = time::interval(Duration::from_secs(1));
-
             loop {
-                interval.tick().await;
-                {
-                    let mut game_str = board_writer.board.write();
-                    let dir = { dir_buf_reader.inner.lock().drain_and_get_random().clone() };
+                tokio::select! {
+                    _ = kill_rx.recv() => {
+                        println!("Shutting down game_state_task");
+                        break ;
+                    },
+                    _ = interval.tick() => {
+                        {
+                            let mut game_str = board_writer.board.write();
+                            let dir = { dir_buf_reader.inner.lock().drain_and_get_random().clone() };
 
-                    game.progress(dir);
-                    *game_str = game.to_string();
-                    let _ = tx.send(game_str.clone()).await;
-                };
+                            game.progress(dir);
+                            *game_str = game.to_string();
+                            let _ = tx.send(game_str.clone()).await.unwrap();
+                        };
+                    }
+                }
             }
         });
     });
 
     let print_task = tokio::task::spawn_blocking(move || {
         handle_print.block_on(async move {
-            while let Some(board) = rx.recv().await {
-                println!("{board}");
+            loop {
+                tokio::select! {
+                    board = rx.recv() => {
+                        if let Some(board) = board {
+                            println!("{board}");
+                        }
+                    },
+                    _ = print_kill_rx.recv() => {
+                        println!("Shutting down print_task");
+                        break;
+                    }
+
+                }
             }
         })
     });
@@ -76,18 +109,7 @@ async fn main() -> Result<(), std::io::Error> {
     .await
     .unwrap();
 
-    //
-    // // do something here so i dont have to sigkill every time i run this program
-    // // lol
-
-    match signal::ctrl_c().await {
-        Ok(()) => {
-            println!("got ctrlc");
-            print_task.abort();
-            game_state_task.abort();
-        }
-        Err(err) => eprintln!("Unable to listen for shutdown signal : {}", err),
-    };
+    join!(game_state_task, print_task, interrupt_task);
     Ok(())
 }
 
