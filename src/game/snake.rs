@@ -79,7 +79,7 @@ impl Default for Snake {
         let max_idx = ROWS - 1;
 
         Self {
-            dir: Direction::Left,
+            dir: Default::default(),
             occupied: deq,
             max_idx,
         }

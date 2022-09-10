@@ -1,3 +1,3 @@
 pub mod game;
 
-mod direction_buffer;
+pub mod direction_buffer;

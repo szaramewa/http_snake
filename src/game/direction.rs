@@ -1,11 +1,17 @@
 use rand::distributions::{Distribution, Standard};
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Hash, Eq)]
 pub enum Direction {
     Up,
     Down,
     Left,
     Right,
+}
+
+impl Default for Direction {
+    fn default() -> Self {
+        Direction::Left
+    }
 }
 
 impl Direction {
