@@ -39,7 +39,7 @@ impl Snake {
             }
             Direction::Up => {
                 if head.0 == 0 {
-                    head.0 = 0
+                    head.0 = self.max_idx
                 } else {
                     head.0 -= 1
                 }
@@ -59,6 +59,9 @@ impl Snake {
                 }
             }
         };
+
+        // mofo
+        self.dir = dir;
 
         self.occupied.push_front(head);
 

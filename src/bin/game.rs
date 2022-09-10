@@ -9,6 +9,6 @@ fn main() {
         let dir: Direction = rand::random();
         game.progress(dir);
 
-        thread::sleep(Duration::from_millis(1000));
+        thread::sleep(Duration::from_millis(100));
     }
 }

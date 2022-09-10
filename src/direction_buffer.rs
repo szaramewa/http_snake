@@ -21,12 +21,19 @@ impl DirBuf {
         }
     }
 
-    pub fn push(&mut self, dir: Direction) {
+    // push to the buffer, if buffer is full or pushed direction is opposite to
+    // the current one return err
+    pub fn push(&mut self, dir: Direction) -> Result<(), anyhow::Error> {
         if self.idx > BUF_MAX_SIZE {
-            return;
+            return Err(anyhow::anyhow!("full buffer"));
         }
-        self.buffer[self.idx] = Some(dir);
-        self.idx += 1;
+        if dir != self.current_dir.opposite() {
+            self.buffer[self.idx] = Some(dir);
+            self.idx += 1;
+            return Ok(());
+        }
+
+        return Err(anyhow::anyhow!("Cant go backwards"));
     }
 
     // clears buffer and returns random direction, if buffer is empty returns
@@ -36,9 +43,12 @@ impl DirBuf {
 
         let dirs: Vec<Direction> = self
             .buffer
-            .into_iter()
-            .filter_map(|mut dir| dir.take())
+            .iter_mut()
+            .filter_map(|dir| dir.take())
             .collect();
+
+        assert!(self.buffer.iter().all(|opt| opt.is_none()));
+        // println!("curr: {}", self.current_dir);
 
         let five_random: Vec<Direction> = dirs.choose_multiple(&mut rng, 5).cloned().collect();
 
@@ -61,6 +71,8 @@ impl DirBuf {
             }
             None => self.current_dir,
         };
+
+        // println!("rand: {}", random_dir);
 
         self.idx = 0;
         self.current_dir = random_dir;

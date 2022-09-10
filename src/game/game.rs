@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, mem};
 
 use rand::prelude::SliceRandom;
 
@@ -17,6 +17,7 @@ impl Game {
         let mut board: Board<Tile> = [[Tile::Empty; ROWS]; COLS];
 
         let snake = Snake::new();
+        // println!("pre init {} {}", snake.head().0, snake.head().1);
 
         for pos in &snake.occupied {
             board[pos.0][pos.1] = Tile::Snake;
@@ -30,6 +31,7 @@ impl Game {
     }
     pub fn new_random() -> Self {
         let mut game = Game::pre_init();
+        // println!("post init {:?}", game.snake.head());
         game.spawn_fruit();
         game
     }
@@ -38,9 +40,11 @@ impl Game {
         let new_head = self.snake.move_(dir);
 
         // inspect this condition, might be wrong
-        // if self.world[new_head.0][new_head.1] == tile::snake {
-        //     panic!("GAME OVER")
-        // }
+        if self.world[new_head.0][new_head.1] == Tile::Snake {
+            let _ = mem::replace(self, Game::new_random());
+            println!("NEWGAME");
+            return;
+        }
 
         if new_head == self.fruit {
             self.spawn_fruit();
