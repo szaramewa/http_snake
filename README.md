@@ -5,7 +5,8 @@
 Server creates 2 endpoints: 
 - **GET** [/snake](http:localhost:3721/snake) which returns game board
 - **POST** [/snake/{direction}] which puts direction in a buffer, from which next snake direction will be chosen randomly.
-Direction can be one of [/up](http:localhost:3721/snake/up), [/down](http:localhost:3721/snake/down), [/left](http:localhost:3721/snake/left) or [/right](http:localhost:3721/snake/right) .
+Direction can be one of [/up, /down, /left or /right].
+
 In case of direction being opposite to the current one (e.g. left and right), server will return error response.
 Game is updated every second by default.
 
@@ -53,8 +54,48 @@ This client sends around 350 requests per game tick on my machine.
 When you are done shut down server/clients with Ctrl - c.
 
 ## 6. Run tests
+
+To run cargo tests use
 ```shell
 cargo test
 ```
+To test api use postman or curl commands.
+
+```shell
+curl -X POST http://127.0.0.1:3721/snake/up
+```
+
+```shell
+curl -X POST http://127.0.0.1:3721/snake/down
+```
+
+```shell
+curl -X POST http://127.0.0.1:3721/snake/left
+```
+
+```shell
+curl -X POST http://127.0.0.1:3721/snake/right
+```
+
+
+```shell
+curl http://127.0.0.1:3721/snake
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
