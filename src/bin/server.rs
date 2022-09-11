@@ -40,7 +40,7 @@ async fn main() -> Result<(), std::io::Error> {
     let dir_buf_reader = dir_buf.clone();
 
     let (print_tx, mut print_rx): (Sender<String>, Receiver<String>) = mpsc::channel(1);
-    let (kill_tx, mut kill_rx) = broadcast::channel(10);
+    let (kill_tx, mut kill_rx) = broadcast::channel(1);
     let mut print_kill_rx = kill_tx.subscribe();
 
     let interrupt_task = tokio::spawn(async move {
