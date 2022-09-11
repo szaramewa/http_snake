@@ -82,3 +82,27 @@ impl TryFrom<char> for Direction {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_opposite() {
+        let dirs = &[
+            Direction::Up,
+            Direction::Down,
+            Direction::Left,
+            Direction::Right,
+        ];
+        let oppos = &[
+            Direction::Down,
+            Direction::Up,
+            Direction::Right,
+            Direction::Left,
+        ];
+        for (dir, opposite) in dirs.into_iter().zip(oppos.into_iter()) {
+            assert_eq!(dir.opposite(), *opposite);
+        }
+    }
+}

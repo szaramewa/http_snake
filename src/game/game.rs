@@ -37,7 +37,6 @@ impl Game {
     }
     pub fn new_random() -> Self {
         let mut game = Game::pre_init();
-        // println!("post init {:?}", game.snake.head());
         game.spawn_fruit();
         game
     }

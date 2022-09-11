@@ -10,21 +10,7 @@ pub struct Snake {
 
 impl Snake {
     pub fn new() -> Self {
-        let x = gen_random_idx_in_range();
-        let y = gen_random_idx_in_range();
-        let mut deq = VecDeque::with_capacity(COLS * ROWS);
-
-        for i in x..x + 8 {
-            deq.push_back((i, y));
-        }
-
-        let max_idx = ROWS - 1;
-
-        Self {
-            dir: Default::default(),
-            occupied: deq,
-            max_idx,
-        }
+        Default::default()
     }
 
     pub fn head(&self) -> Position {
@@ -107,53 +93,88 @@ impl Default for Snake {
 mod snake_tests {
     use super::*;
 
-    struct SnakeExpecteadHead {
-        snake: Snake,
-        expected: Position,
+    #[test]
+    fn test_cant_go_opposite_direction() {
+        let random_pos = (10, 10);
+        let mut snakes = vec![
+            Snake {
+                dir: Direction::Up,
+                occupied: VecDeque::from([random_pos]),
+                max_idx: SNAKE_MAX_IDX,
+            },
+            Snake {
+                dir: Direction::Down,
+                occupied: VecDeque::from([random_pos]),
+                max_idx: SNAKE_MAX_IDX,
+            },
+            Snake {
+                dir: Direction::Left,
+                occupied: VecDeque::from([random_pos]),
+                max_idx: SNAKE_MAX_IDX,
+            },
+            Snake {
+                dir: Direction::Right,
+                occupied: VecDeque::from([random_pos]),
+                max_idx: SNAKE_MAX_IDX,
+            },
+        ];
+
+        for snake in &mut snakes {
+            let dir = snake.dir.clone();
+            // move shouldnt change direction
+            snake.move_(snake.dir.opposite());
+            assert_eq!(dir, snake.dir);
+        }
     }
+
     #[test]
     fn test_snake_appears_on_other_side() {
+        struct SnakeExpectedHead {
+            snake: Snake,
+            expected_head: Position,
+        }
+
         let totally_random_number = 3usize;
 
         let mut snakes = vec![
-            SnakeExpecteadHead {
+            SnakeExpectedHead {
                 snake: Snake {
                     dir: Direction::Up,
                     occupied: VecDeque::from([(0usize, totally_random_number)]),
                     max_idx: SNAKE_MAX_IDX,
                 },
-                expected: (SNAKE_MAX_IDX, totally_random_number),
+                expected_head: (SNAKE_MAX_IDX, totally_random_number),
             },
-            SnakeExpecteadHead {
+            SnakeExpectedHead {
                 snake: Snake {
                     dir: Direction::Down,
                     occupied: VecDeque::from([(SNAKE_MAX_IDX, totally_random_number)]),
                     max_idx: SNAKE_MAX_IDX,
                 },
-                expected: (0, totally_random_number),
+                expected_head: (0, totally_random_number),
             },
-            SnakeExpecteadHead {
+            SnakeExpectedHead {
                 snake: Snake {
                     dir: Direction::Left,
                     occupied: VecDeque::from([(totally_random_number, 0usize)]),
                     max_idx: SNAKE_MAX_IDX,
                 },
-                expected: (totally_random_number, SNAKE_MAX_IDX),
+                expected_head: (totally_random_number, SNAKE_MAX_IDX),
             },
-            SnakeExpecteadHead {
+            SnakeExpectedHead {
                 snake: Snake {
                     dir: Direction::Right,
                     occupied: VecDeque::from([(totally_random_number, SNAKE_MAX_IDX)]),
                     max_idx: SNAKE_MAX_IDX,
                 },
-                expected: (totally_random_number, 0),
+                expected_head: (totally_random_number, 0),
             },
         ];
 
         for snake_expected in snakes.iter_mut() {
             let snake = &mut snake_expected.snake;
             snake.move_(snake.dir);
-            assert_eq!(snake.head(), snake_expected.expected);
+            assert_eq!(snake.head(), snake_expected.expected_head);
         }
     }
 }

@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use actix_web::{get, http::header::ContentType, post, web, App, HttpResponse, HttpServer};
 use futures::join;
 use http_snake::{
