@@ -4,7 +4,10 @@ use actix_web::{get, http::header::ContentType, post, web, App, HttpResponse, Ht
 use futures::join;
 use http_snake::{
     direction_buffer::DirBuf,
-    game::{direction::Direction, game::Game},
+    game::{
+        direction::Direction,
+        game::{Game, GameState},
+    },
 };
 use parking_lot::{Mutex, RwLock};
 use tokio::{
@@ -25,6 +28,7 @@ async fn main() -> Result<(), std::io::Error> {
     let handle_print = handle.clone();
 
     let mut game = Game::new_random();
+    let update_time = time::Duration::from_millis(1000);
 
     let bs = web::Data::new(BoardString {
         board: RwLock::new(game.to_string()),
@@ -44,9 +48,7 @@ async fn main() -> Result<(), std::io::Error> {
     let interrupt_task = tokio::spawn(async move {
         match signal::ctrl_c().await {
             Ok(()) => {
-                println!("Got ctrlc");
                 kill_tx.send(()).unwrap();
-                println!("Sended");
             }
             Err(err) => println!("Error handling ctrlc: {}", err),
         }
@@ -55,7 +57,7 @@ async fn main() -> Result<(), std::io::Error> {
     // task managing game state
     let game_state_task = tokio::task::spawn_blocking(move || {
         handle.block_on(async move {
-            let mut interval = time::interval(Duration::from_secs(1));
+            let mut interval = time::interval(update_time);
             loop {
                 tokio::select! {
                     _ = kill_rx.recv() => {
@@ -67,8 +69,18 @@ async fn main() -> Result<(), std::io::Error> {
                             let mut game_str = board_writer.board.write();
                             let dir = { dir_buf_reader.inner.lock().drain_and_get_random().clone() };
 
-                            game.progress(dir);
+                            // snake has eaten its tail
+                            // need to reset dir in DirBuf
+                            match game.progress(dir) {
+                                GameState::Over => {
+                                    dir_buf_reader.inner.lock().set_dir(Default::default()); 
+                                    game = Game::new_random();
+                                },
+                                _ => {}
+                            };
                             *game_str = game.to_string();
+                            // this can be moved outside scope so locks can be 
+                            // freed without waiting for channel to send msg
                             let _ = tx.send(game_str.clone()).await.unwrap();
                         };
                     }

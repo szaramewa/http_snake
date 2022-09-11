@@ -12,6 +12,8 @@ const COLS: usize = 15;
 
 const POSSIBLE_SNAKE_STARTING_RANGE: Range<usize> = 3..5;
 
+const SNAKE_MAX_IDX: usize = ROWS - 1;
+
 type Board<T> = [[T; ROWS]; COLS];
 type Position = (usize, usize);
 

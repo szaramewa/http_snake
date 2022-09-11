@@ -1,4 +1,4 @@
-use std::{fmt::Display, mem};
+use std::fmt::Display;
 
 use rand::prelude::SliceRandom;
 
@@ -8,6 +8,12 @@ pub struct Game {
     world: Board<Tile>,
     pub snake: Snake,
     fruit: Position,
+}
+
+pub enum GameState {
+    Continues,
+    Over,
+    SnakeGrows,
 }
 
 impl Game {
@@ -36,24 +42,25 @@ impl Game {
         game
     }
 
-    pub fn progress(&mut self, dir: Direction) {
+    pub fn progress(&mut self, dir: Direction) -> GameState {
         let new_head = self.snake.move_(dir);
 
         // inspect this condition, might be wrong
         if self.world[new_head.0][new_head.1] == Tile::Snake {
-            let _ = mem::replace(self, Game::new_random());
-            println!("NEWGAME");
-            return;
-        }
-
-        if new_head == self.fruit {
-            self.spawn_fruit();
-        } else {
-            let tail = self.snake.occupied.pop_back().unwrap();
-            self.world[tail.0][tail.1] = Tile::Empty;
+            // left => up => right => down makes this go brr and infinitely create new game
+            return GameState::Over;
         }
 
         self.world[new_head.0][new_head.1] = Tile::Snake;
+
+        if new_head == self.fruit {
+            self.spawn_fruit();
+            return GameState::SnakeGrows;
+        } else {
+            let tail = self.snake.occupied.pop_back().unwrap();
+            self.world[tail.0][tail.1] = Tile::Empty;
+            return GameState::Continues;
+        }
     }
 
     fn spawn_fruit(&mut self) {

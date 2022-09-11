@@ -47,7 +47,7 @@ impl DirBuf {
             .filter_map(|dir| dir.take())
             .collect();
 
-
+        println!("{}", dirs.len());
         let five_random: Vec<Direction> = dirs.choose_multiple(&mut rng, 5).cloned().collect();
 
         let map = five_random.iter().fold(HashMap::new(), |mut map, dir| {
@@ -73,5 +73,9 @@ impl DirBuf {
         self.idx = 0;
         self.current_dir = random_dir;
         random_dir
+    }
+
+    pub fn set_dir(&mut self, dir: Direction) {
+        self.current_dir = dir;
     }
 }
