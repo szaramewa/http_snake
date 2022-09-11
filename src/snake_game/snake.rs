@@ -5,7 +5,7 @@ use super::{direction::Direction, gen_random_idx_in_range, Position, COLS, ROWS,
 pub struct Snake {
     pub dir: Direction,
     pub occupied: VecDeque<Position>,
-    max_idx: usize,
+    pub(crate) max_idx: usize,
 }
 
 impl Snake {
@@ -90,7 +90,7 @@ impl Default for Snake {
 }
 
 #[cfg(test)]
-mod snake_tests {
+mod test_snake {
     use super::*;
 
     #[test]

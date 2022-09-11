@@ -10,6 +10,7 @@ pub struct Game {
     fruit: Position,
 }
 
+#[derive(PartialEq, Debug)]
 pub enum GameState {
     Continues,
     Over,
@@ -59,6 +60,7 @@ impl Game {
         }
     }
 
+    // lets hope nobody beats the game bcs it will crash then
     fn spawn_fruit(&mut self) {
         let vacant_positions = self
             .world
@@ -72,9 +74,7 @@ impl Game {
             })
             .collect::<Vec<Position>>();
 
-        let fruit = vacant_positions
-            .choose(&mut rand::thread_rng())
-            .unwrap();
+        let fruit = vacant_positions.choose(&mut rand::thread_rng()).unwrap();
         self.fruit = *fruit;
         self.world[fruit.0][fruit.1] = Tile::Fruit;
     }
@@ -93,5 +93,42 @@ impl Display for Game {
         });
 
         write!(f, "{}\n{}{}", border, board, border)
+    }
+}
+
+#[cfg(test)]
+mod test_game {
+    use std::collections::VecDeque;
+
+    use crate::snake_game::SNAKE_MAX_IDX;
+
+    use super::*;
+
+    #[test]
+    fn test_progress_returns_correct_game_state() {
+        let occupied = VecDeque::from((5..10).map(|idx| (idx, 5)).collect::<Vec<_>>());
+        let snake = Snake {
+            dir: Direction::Up,
+            occupied: occupied.clone(),
+            max_idx: SNAKE_MAX_IDX,
+        };
+        let mut world = [[Tile::Empty; ROWS]; COLS];
+        for (y, x) in occupied {
+            world[y][x] = Tile::Snake;
+        }
+        // fruit directly above snakes head
+        let fruit = (4, 5);
+        let mut game = Game {
+            world,
+            snake,
+            fruit,
+        };
+
+        assert_eq!(game.progress(Direction::Up), GameState::SnakeGrows);
+        // make a circle
+        assert_eq!(game.progress(Direction::Right), GameState::Continues);
+        assert_eq!(game.progress(Direction::Down), GameState::Continues);
+        // snake should eat itself
+        assert_eq!(game.progress(Direction::Left), GameState::Over);
     }
 }

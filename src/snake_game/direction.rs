@@ -84,7 +84,7 @@ impl TryFrom<char> for Direction {
 }
 
 #[cfg(test)]
-mod tests {
+mod test_direction {
     use super::*;
 
     #[test]

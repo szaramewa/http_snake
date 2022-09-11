@@ -39,7 +39,7 @@ async fn main() -> Result<(), std::io::Error> {
     let board_writer = bs.clone();
     let dir_buf_reader = dir_buf.clone();
 
-    let (tx, mut rx): (Sender<String>, Receiver<String>) = mpsc::channel(1);
+    let (print_tx, mut print_rx): (Sender<String>, Receiver<String>) = mpsc::channel(1);
     let (kill_tx, mut kill_rx) = broadcast::channel(10);
     let mut print_kill_rx = kill_tx.subscribe();
 
@@ -52,7 +52,6 @@ async fn main() -> Result<(), std::io::Error> {
         }
     });
 
-    // task managing game state
     let game_state_task = tokio::task::spawn_blocking(move || {
         handle.block_on(async move {
             let mut interval = time::interval(update_time);
@@ -70,15 +69,13 @@ async fn main() -> Result<(), std::io::Error> {
                             // snake has eaten its tail
                             // need to reset dir in DirBuf
                             if let GameState::Over = game.progress(dir)  {
-                                    dir_buf_reader.inner.lock().set_dir(Default::default()); 
+                                    dir_buf_reader.inner.lock().set_dir(Default::default());
                                     game = Game::new_random();
-                                
+
                             };
                             *game_str = game.to_string();
-                            // this can be moved outside scope so locks can be 
-                            // freed without waiting for channel to send msg
                         };
-                        tx.send(game.to_string()).await.unwrap();
+                        print_tx.send(game.to_string()).await.unwrap();
 
                     }
                 }
@@ -90,7 +87,7 @@ async fn main() -> Result<(), std::io::Error> {
         handle_print.block_on(async move {
             loop {
                 tokio::select! {
-                    board = rx.recv() => {
+                    board = print_rx.recv() => {
                         if let Some(board) = board {
                             println!("{board}");
                         }

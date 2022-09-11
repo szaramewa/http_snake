@@ -47,7 +47,6 @@ impl DirBuf {
             .filter_map(|dir| dir.take())
             .collect();
 
-        println!("{}", dirs.len());
         let five_random: Vec<Direction> = dirs.choose_multiple(&mut rng, 5).cloned().collect();
 
         let map = five_random.iter().fold(HashMap::new(), |mut map, dir| {
@@ -81,7 +80,7 @@ impl DirBuf {
 }
 
 #[cfg(test)]
-mod tests {
+mod test_direction_buffer {
     use super::*;
 
     const DIRS: [Direction; 4] = [
@@ -109,7 +108,7 @@ mod tests {
     #[test]
     fn test_cannot_push_opposite_direction() {
         let mut buf = DirBuf::new();
-        for dir in DIRS{
+        for dir in DIRS {
             buf.set_dir(dir);
             let resp = buf.push(dir.opposite());
             assert!(resp.is_err());
@@ -122,7 +121,7 @@ mod tests {
 
     #[test]
     fn test_drain_nones_whole_buffer() {
-        for dir in DIRS{
+        for dir in DIRS {
             let mut buf = DirBuf::new();
             buf.set_dir(dir);
 
@@ -147,5 +146,4 @@ mod tests {
             assert_eq!(dir, buf.drain_and_get_random());
         }
     }
-
 }
