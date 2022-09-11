@@ -1,5 +1,5 @@
 use console::Term;
-use http_snake::game::direction::Direction;
+use http_snake::snake_game::direction::Direction;
 
 #[tokio::main]
 async fn main() {

@@ -23,7 +23,6 @@ impl Game {
         let mut board: Board<Tile> = [[Tile::Empty; ROWS]; COLS];
 
         let snake = Snake::new();
-        // println!("pre init {} {}", snake.head().0, snake.head().1);
 
         for pos in &snake.occupied {
             board[pos.0][pos.1] = Tile::Snake;
@@ -44,9 +43,7 @@ impl Game {
     pub fn progress(&mut self, dir: Direction) -> GameState {
         let new_head = self.snake.move_(dir);
 
-        // inspect this condition, might be wrong
         if self.world[new_head.0][new_head.1] == Tile::Snake {
-            // left => up => right => down makes this go brr and infinitely create new game
             return GameState::Over;
         }
 
@@ -77,7 +74,7 @@ impl Game {
 
         let fruit = vacant_positions
             .choose(&mut rand::thread_rng())
-            .unwrap_or(&vacant_positions[0]);
+            .unwrap();
         self.fruit = *fruit;
         self.world[fruit.0][fruit.1] = Tile::Fruit;
     }
@@ -85,7 +82,7 @@ impl Game {
 
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let border: String = std::iter::repeat('-').take(ROWS + 2).collect();
+        let border: String = std::iter::repeat('-').take(COLS + 2).collect();
         let board = self.world.iter().fold(String::new(), |mut acc, row| {
             acc.push('|');
             for tile in row {

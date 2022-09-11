@@ -1,6 +1,6 @@
 use std::{thread, time::Duration};
 
-use http_snake::game::{direction::Direction, game::Game};
+use http_snake::snake_game::{direction::Direction, game::Game};
 
 fn main() {
     let mut game = Game::new_random();

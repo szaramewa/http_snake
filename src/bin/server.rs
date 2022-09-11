@@ -2,7 +2,7 @@ use actix_web::{get, http::header::ContentType, post, web, App, HttpResponse, Ht
 use futures::join;
 use http_snake::{
     direction_buffer::DirBuf,
-    game::{
+    snake_game::{
         direction::Direction,
         game::{Game, GameState},
     },
@@ -65,22 +65,21 @@ async fn main() -> Result<(), std::io::Error> {
                     _ = interval.tick() => {
                         {
                             let mut game_str = board_writer.board.write();
-                            let dir = { dir_buf_reader.inner.lock().drain_and_get_random().clone() };
+                            let dir = { dir_buf_reader.inner.lock().drain_and_get_random() };
 
                             // snake has eaten its tail
                             // need to reset dir in DirBuf
-                            match game.progress(dir) {
-                                GameState::Over => {
+                            if let GameState::Over = game.progress(dir)  {
                                     dir_buf_reader.inner.lock().set_dir(Default::default()); 
                                     game = Game::new_random();
-                                },
-                                _ => {}
+                                
                             };
                             *game_str = game.to_string();
                             // this can be moved outside scope so locks can be 
                             // freed without waiting for channel to send msg
-                            let _ = tx.send(game_str.clone()).await.unwrap();
                         };
+                        tx.send(game.to_string()).await.unwrap();
+
                     }
                 }
             }

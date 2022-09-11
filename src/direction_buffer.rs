@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use rand::prelude::SliceRandom;
 
-use crate::game::direction::Direction;
+use crate::snake_game::direction::Direction;
 
 const BUF_MAX_SIZE: usize = 1024;
 
