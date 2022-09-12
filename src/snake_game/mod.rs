@@ -35,7 +35,7 @@ impl Display for Tile {
             f,
             "{}",
             match self {
-                Tile::Snake => '#',
+                Tile::Snake => '*',
                 Tile::Empty => ' ',
                 Tile::Fruit => '@',
             }

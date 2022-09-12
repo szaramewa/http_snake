@@ -83,14 +83,23 @@ impl Game {
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let border: String = std::iter::repeat('-').take(COLS + 2).collect();
-        let board = self.world.iter().fold(String::new(), |mut acc, row| {
-            acc.push('|');
-            for tile in row {
-                acc.push_str(&tile.to_string())
-            }
-            acc.push_str(&"|\n");
-            acc
-        });
+        let head = self.snake.head();
+        let board = self
+            .world
+            .iter()
+            .enumerate()
+            .fold(String::new(), |mut acc, (idy, row)| {
+                acc.push('|');
+                for (idx, tile) in row.iter().enumerate() {
+                    if (idy, idx) == head {
+                        acc.push('#');
+                    } else {
+                        acc.push_str(&tile.to_string());
+                    }
+                }
+                acc.push_str(&"|\n");
+                acc
+            });
 
         write!(f, "{}\n{}{}", border, board, border)
     }

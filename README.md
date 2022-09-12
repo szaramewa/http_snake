@@ -1,14 +1,14 @@
-# A blazingly (🔥) fast (🚀) Rust http snake game server.
+# A<!--  blazingly (🔥) fast (🚀) --> Rust http snake game server.
 
 # Overview
 
 Server creates 2 endpoints: 
 - **GET** [/snake](http:localhost:3721/snake) which returns game board
-- **POST** [/snake/{direction}] which puts direction in a buffer, from which next snake direction will be chosen randomly.
-Direction can be one of [/up, /down, /left or /right].
+- **POST** /snake/{direction} which puts direction in a buffer, from which next snake direction will be chosen randomly.
+Direction can be one of [/up, /down, /left or /right]. In case of direction being opposite to the current one (e.g. left and right), server will return error response.
 
-In case of direction being opposite to the current one (e.g. left and right), server will return error response.
-Game is updated every second by default.
+Game is updated every second by default. There is one fruit on board, if snake eats it, it will grow by one unit.
+When snakes head moves on a tile already occupied by it, game will restart itself.
 
 ## 0. Prerequisites
 
@@ -23,7 +23,7 @@ git clone https://github.com/szaramewa/http_snake
 
 Build project
 ```shell
-cargo build --release
+cd http_snake && cargo build --release
 ```
 
 ## 2. Run server
@@ -47,9 +47,9 @@ This allows you to move snake using WSAD keys.
 cargo run -r --bin spammer
 ```
 
-This client sends around 350 requests per game tick on my machine.
+This client sends around 330 valid requests per game tick on my machine.
 
-## 5. Shutdown
+## 5. Shut down
 
 When you are done shut down server/clients with Ctrl - c.
 

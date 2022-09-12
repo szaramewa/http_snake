@@ -20,7 +20,7 @@ use tokio::{
 
 #[actix_web::main]
 async fn main() -> Result<(), std::io::Error> {
-    // handle to async runtime for use in another thread
+    // handle to async runtime
     let handle = Handle::current();
 
     let handle_print = handle.clone();
